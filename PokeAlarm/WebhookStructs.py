@@ -4,7 +4,7 @@ import logging
 import traceback
 # 3rd Party Imports
 # Local Imports
-from Utils import get_gmaps_link, get_move_damage, get_move_dps, get_move_duration,\
+from Utils import get_gmaps_link, get_form_name, get_move_damage, get_move_dps, get_move_duration,\
     get_move_energy, get_pokemon_gender, get_pokemon_size, get_applemaps_link
 
 log = logging.getLogger('WebhookStructs')
@@ -28,6 +28,8 @@ class RocketMap:
                 return RocketMap.pokestop(data.get('message'))
             elif kind == 'gym' or kind == 'gym_details':
                 return RocketMap.gym(data.get('message'))
+            elif kind == 'raid':
+                return RocketMap.raid(data.get('message'))                           
             elif kind in ['captcha', 'scheduler']:  # Unsupported Webhooks
                 log.debug("{} webhook received. This webhooks is not yet supported at this time.".format({kind}))
             else:
@@ -44,6 +46,10 @@ class RocketMap:
         quick_id = check_for_none(int, data.get('move_1'), '?')
         charge_id = check_for_none(int, data.get('move_2'), '?')
         lat, lng = data['latitude'], data['longitude']
+		# Get the form from data and as it may be uint or string make sure is zero when string 'None'
+        form_raw = data['form']
+        if form_raw == None:
+			 form_raw = 0
         # Generate all the non-manager specifi
         pkmn = {
             'type': "pokemon",
@@ -52,6 +58,8 @@ class RocketMap:
             'disappear_time': datetime.utcfromtimestamp(data['disappear_time']),
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
+            'cp': check_for_none(int, data.get('cp'), '?'),
+            'level': check_for_none(int, data.get('pokemon_level'), '?'),
             'iv': '?',
             'atk': check_for_none(int, data.get('individual_attack'), '?'),
             'def': check_for_none(int, data.get('individual_defense'), '?'),
@@ -70,8 +78,11 @@ class RocketMap:
             'weight': check_for_none(float, data.get('weight'), 'unkn'),
             'gender': get_pokemon_gender(check_for_none(int, data.get('gender'), '?')),
             'size': 'unknown',
+            'tiny_rat': '',
+            'big_karp': '',
             'gmaps': get_gmaps_link(lat, lng),
-            'applemaps': get_applemaps_link(lat, lng)
+            'applemaps': get_applemaps_link(lat, lng),
+			'form': get_form_name(int(form_raw))
         }
         if pkmn['atk'] != '?' or pkmn['def'] != '?' or pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta']) * 100) / float(45))
@@ -82,6 +93,12 @@ class RocketMap:
             pkmn['size'] = get_pokemon_size(pkmn['pkmn_id'], pkmn['height'], pkmn['weight'])
             pkmn['height'] = "{:.2f}".format(pkmn['height'])
             pkmn['weight'] = "{:.2f}".format(pkmn['weight'])
+
+        if pkmn['pkmn_id'] == 19 and pkmn['size'] == 'tiny':
+            pkmn['tiny_rat'] = 'tiny'
+
+        if pkmn['pkmn_id'] == 129 and pkmn['size'] == 'big':
+            pkmn['big_karp'] = 'big'
 
         return pkmn
 
@@ -103,6 +120,60 @@ class RocketMap:
         return stop
 
     @staticmethod
+    def raid(data):
+        log.debug("Converting to raid: \n {}".format(data))
+
+        quick_id = check_for_none(int, data.get('move_1'), '?')
+        charge_id = check_for_none(int, data.get('move_2'), '?')
+
+        raid_end = None
+        raid_begin = None
+
+        if 'raid_begin' in data:
+            raid_begin = datetime.utcfromtimestamp(data['raid_begin'])
+        elif 'battle' in data:
+            raid_begin = datetime.utcfromtimestamp(data['battle'])
+        elif 'start' in data:
+            raid_begin = datetime.utcfromtimestamp(data['start'])
+
+        if 'raid_end' in data:  # monocle
+            raid_end = datetime.utcfromtimestamp(data['raid_end'])
+        elif 'end' in data:  # rocketmap
+            raid_end = datetime.utcfromtimestamp(data['end'])
+
+        if 'raid_seed' in data:  # monocle sends a unique raid seed
+            raid_seed = data.get('raid_seed')
+        else:
+            raid_seed = data.get('gym_id')  # RM sends the gym id
+
+        raid = {
+            'type': 'raid',
+            'id': raid_seed,
+            'pkmn_id': check_for_none(int, data.get('pokemon_id'), 0),
+            'cp': check_for_none(int, data.get('cp'), '?'),
+            'quick_id': quick_id,
+            'quick_damage': get_move_damage(quick_id),
+            'quick_dps': get_move_dps(quick_id),
+            'quick_duration': get_move_duration(quick_id),
+            'quick_energy': get_move_energy(quick_id),
+            'charge_id': charge_id,
+            'charge_damage': get_move_damage(charge_id),
+            'charge_dps': get_move_dps(charge_id),
+            'charge_duration': get_move_duration(charge_id),
+            'charge_energy': get_move_energy(charge_id),
+            'raid_level': check_for_none(int, data.get('level'), 0),
+            'expire_time': raid_end,
+            'raid_begin': raid_begin,
+            'lat': float(data['latitude']),
+            'lng': float(data['longitude'])
+        }
+        
+        raid['gmaps'] = get_gmaps_link(raid['lat'], raid['lng'])
+        raid['applemaps'] = get_applemaps_link(raid['lat'], raid['lng'])
+
+        return raid
+
+    @staticmethod    
     def gym(data):
         log.debug("Converting to gym: \n {}".format(data))
         gym = {
@@ -112,7 +183,11 @@ class RocketMap:
             "points": str(data.get('gym_points')),
             "guard_pkmn_id": data.get('guard_pokemon_id'),
             'lat': float(data['latitude']),
-            'lng': float(data['longitude'])
+            'lng': float(data['longitude']),
+            'lng': float(data['longitude']),
+            'name': check_for_none(str, data.get('name'), 'unknown'),
+            'description': check_for_none(str, data.get('description'), 'unknown'),
+            'url': check_for_none(str, data.get('url'), 'unknown')                                   
         }
         gym['gmaps'] = get_gmaps_link(gym['lat'], gym['lng'])
         gym['applemaps'] = get_applemaps_link(gym['lat'], gym['lng'])

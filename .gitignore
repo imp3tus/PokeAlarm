@@ -1,6 +1,0 @@
-*.pyc
-*.idea
-*.json
-*.ini
-*.txt
-!locales/*.json
