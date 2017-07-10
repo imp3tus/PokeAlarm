@@ -303,53 +303,6 @@ class Manager(object):
             for id_ in old:  # Remove gathered events
                 del dict_[id_]
 
-    # Process new Pokemon data and decide if a notification needs to be sent
-    def process_pokemon(self, pkmn):
-        # Make sure that pokemon are enabled
-        if self.__pokemon_settings['enabled'] is False:
-            log.debug("Pokemon ignored: pokemon notifications are disabled.")
-            return
-
-        # Extract some base information
-        id_ = pkmn['id']
-        pkmn_id = pkmn['pkmn_id']
-        name = self.__pokemon_name[pkmn_id]
-
-        # Check for previously processed
-        if id_ in self.__pokemon_hist:
-            log.debug("{} was skipped because it was previously processed.".format(name))
-            return
-        self.__pokemon_hist[id_] = pkmn['disappear_time']
-
-        # Check the time remaining
-        seconds_left = (pkmn['disappear_time'] - datetime.utcnow()).total_seconds()
-        if seconds_left < self.__time_limit:
-            if self.__quiet is False:
-                log.info("{} ignored: Only {} seconds remaining.".format(name, seconds_left))
-            return
-
-        # Check that the filter is even set
-        if pkmn_id not in self.__pokemon_settings['filters']:
-            if self.__quiet is False:
-                log.info("{} ignored: no filters are set".format(name))
-            return
-
-        # Extract some useful info that will be used in the filters
-        passed = False
-        lat, lng = pkmn['lat'], pkmn['lng']
-        dist = get_earth_dist([lat, lng], self.__latlng)
-        cp = pkmn['cp']
-        level = pkmn['level']
-        iv = pkmn['iv']
-        def_ = pkmn['def']
-        atk = pkmn['atk']
-        sta = pkmn['sta']
-        quick_id = pkmn['quick_id']
-        charge_id = pkmn['charge_id']
-        size = pkmn['size']
-        gender = pkmn['gender']
-        form = pkmn['form']
-
     # Check if a given pokemon is active on a filter
     def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, form, gender, iv,
                              level, name, size):
