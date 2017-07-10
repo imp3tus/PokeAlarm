@@ -34,7 +34,7 @@ def create_multi_filter(location, FilterType, settings, default):
         sys.exit(1)
 
 
-def load_pokemon_section(settings):
+def load_pokemon_filters(settings):
     log.info("Setting Pokemon filters...")
     pokemon = { "enabled": bool(parse_boolean(settings.pop('enabled', None)) or False)}
     # Set the defaults for "True"
@@ -75,7 +75,7 @@ def load_pokemon_section(settings):
     log.info("Setting Pokemon filters...")
     pokemon = { "enabled": bool(parse_boolean(settings.pop('enabled', None)) or False)}
 
-    filters = load_pokemon_filters(settings)              
+    filters = load_pokemon_filters(settings)
     pokemon['filters'] = filters
     # Output filters
     log.debug(filters)

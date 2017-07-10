@@ -285,7 +285,7 @@ class Manager(object):
                 elif kind == "gym":
                     self.process_gym(obj)
                 elif kind == "raid":
-                    self.process_raid(obj)         
+                    self.process_raid(obj)
                 else:
                     log.error("!!! Manager does not support {} objects!".format(kind))
                 log.debug("Finished processing object {} with id {}".format(obj['type'], obj['id']))
@@ -352,7 +352,7 @@ class Manager(object):
 
     # Check if a given pokemon is active on a filter
     def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, form_id, gender, iv,
-                             level, name, size):        
+                             level, name, size):
 
         filters = self.__pokemon_settings['filters'][pkmn_id]
         for filt_ct in range(len(filters)):
@@ -850,11 +850,21 @@ class Manager(object):
         lat, lng = raid['lat'], raid['lng']
         dist = get_earth_dist([lat, lng], self.__latlng)
 
-        # Check if raid is in geofences
-        raid['geofence'] = self.check_geofences('Raid', lat, lng)
+        # Check the geofences
+        raid['geofence'] = self.check_geofences('raid', lat, lng)
         if len(self.__geofences) > 0 and raid['geofence'] == 'unknown':
-            log.info("Raid update ignored: located outside geofences.")
+            log.info("raid rejected: not inside geofence(s)")
             return
+
+        # Check if in geofences
+        if len(self.__geofences) > 0:
+            inside = False
+            for gf in self.__geofences:
+                inside |= gf.contains(lat, lng)
+            if inside is False:
+                if self.__quiet is False:
+                    log.info("Raid update ignored: located outside geofences.")
+                return
         else:
             log.debug("Raid inside geofences was not checked because no geofences were set.")
 
@@ -973,7 +983,7 @@ class Manager(object):
         with open(os.path.join(locale_path, 'leaders.json'), 'r') as f:
             leaders = json.loads(f.read())
             for team_id, value in leaders.iteritems():
-                self.__leader[int(team_id)] = value               
+                self.__leader[int(team_id)] = value
 
     ####################################################################################################################
 
