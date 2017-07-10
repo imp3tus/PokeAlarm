@@ -285,7 +285,7 @@ class Manager(object):
                 elif kind == "gym":
                     self.process_gym(obj)
                 elif kind == "raid":
-                    self.process_raid(obj)
+                    self.process_raid(obj)         
                 else:
                     log.error("!!! Manager does not support {} objects!".format(kind))
                 log.debug("Finished processing object {} with id {}".format(obj['type'], obj['id']))
@@ -303,9 +303,58 @@ class Manager(object):
             for id_ in old:  # Remove gathered events
                 del dict_[id_]
 
+    # Process new Pokemon data and decide if a notification needs to be sent
+    def process_pokemon(self, pkmn):
+        # Make sure that pokemon are enabled
+        if self.__pokemon_settings['enabled'] is False:
+            log.debug("Pokemon ignored: pokemon notifications are disabled.")
+            return
+
+        # Extract some base information
+        id_ = pkmn['id']
+        pkmn_id = pkmn['pkmn_id']
+        name = self.__pokemon_name[pkmn_id]
+
+        # Check for previously processed
+        if id_ in self.__pokemon_hist:
+            log.debug("{} was skipped because it was previously processed.".format(name))
+            return
+        self.__pokemon_hist[id_] = pkmn['disappear_time']
+
+        # Check the time remaining
+        seconds_left = (pkmn['disappear_time'] - datetime.utcnow()).total_seconds()
+        if seconds_left < self.__time_limit:
+            if self.__quiet is False:
+                log.info("{} ignored: Only {} seconds remaining.".format(name, seconds_left))
+            return
+
+        # Check that the filter is even set
+        if pkmn_id not in self.__pokemon_settings['filters']:
+            if self.__quiet is False:
+                log.info("{} ignored: no filters are set".format(name))
+            return
+
+        # Extract some useful info that will be used in the filters
+        passed = False
+        lat, lng = pkmn['lat'], pkmn['lng']
+        dist = get_earth_dist([lat, lng], self.__latlng)
+        cp = pkmn['cp']
+        level = pkmn['level']
+        iv = pkmn['iv']
+        def_ = pkmn['def']
+        atk = pkmn['atk']
+        sta = pkmn['sta']
+        quick_id = pkmn['quick_id']
+        charge_id = pkmn['charge_id']
+        size = pkmn['size']
+        gender = pkmn['gender']
+        form = pkmn['form']
+
     # Check if a given pokemon is active on a filter
-    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, gender, iv,
-                             level, name, size):
+    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, form_id, gender, iv,
+                             level, name, size):        
+
+        filters = self.__pokemon_settings['filters'][pkmn_id]
         for filt_ct in range(len(filters)):
             filt = filters[filt_ct]
 
@@ -458,13 +507,13 @@ class Manager(object):
                     continue
                 log.debug("Pokemon 'gender' was not checked because it was missing.")
 
-
             # Check for a valid form
             if form_id is not None and form_id != 'unkn' and form_id != '?':
                 if not filt.check_form(form_id):
                     if self.__quiet is False:
                         log.info("{} rejected: Form ({}) was not correct - (F #{})".format(name, form_id, filt_ct))
                     continue
+
             # Nothing left to check, so it must have passed
             passed = True
             log.debug("{} passed filter #{}".format(name, filt_ct))
@@ -801,21 +850,11 @@ class Manager(object):
         lat, lng = raid['lat'], raid['lng']
         dist = get_earth_dist([lat, lng], self.__latlng)
 
-        # Check the geofences
+        # Check if raid is in geofences
         raid['geofence'] = self.check_geofences('Raid', lat, lng)
         if len(self.__geofences) > 0 and raid['geofence'] == 'unknown':
-            log.info("Raid rejected: not inside geofence(s)")
+            log.info("Raid update ignored: located outside geofences.")
             return
-
-        # Check if in geofences
-        if len(self.__geofences) > 0:
-            inside = False
-            for gf in self.__geofences:
-                inside |= gf.contains(lat, lng)
-            if inside is False:
-                if self.__quiet is False:
-                    log.info("Raid update ignored: located outside geofences.")
-                return
         else:
             log.debug("Raid inside geofences was not checked because no geofences were set.")
 
@@ -847,7 +886,7 @@ class Manager(object):
 
             filters = self.__raid_settings['filters'][pkmn_id]
             passed = self.check_pokemon_filter(filters, atk, def_, sta, quick_id, charge_id, cp, dist, None, None, iv, level,
-                                               name, None)                                                        
+                                               name, None)
             # If we didn't pass any filters
             if not passed:
                 log.debug("Raid {} did not pass pokemon check".format(id_))
@@ -886,6 +925,7 @@ class Manager(object):
 
         for thread in threads:
             thread.join()
+
     # Check to see if a notification is within the given range
     def check_geofences(self, name, lat, lng):
         for gf in self.__geofences:
@@ -933,7 +973,7 @@ class Manager(object):
         with open(os.path.join(locale_path, 'leaders.json'), 'r') as f:
             leaders = json.loads(f.read())
             for team_id, value in leaders.iteritems():
-                self.__leader[int(team_id)] = value
+                self.__leader[int(team_id)] = value               
 
     ####################################################################################################################
 

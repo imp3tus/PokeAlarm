@@ -34,7 +34,9 @@ def create_multi_filter(location, FilterType, settings, default):
         sys.exit(1)
 
 
-def load_pokemon_filters(settings):
+def load_pokemon_section(settings):
+    log.info("Setting Pokemon filters...")
+    pokemon = { "enabled": bool(parse_boolean(settings.pop('enabled', None)) or False)}
     # Set the defaults for "True"
     default_filt = PokemonFilter(settings.pop('default', {}), {
         "ignore_missing": False,
@@ -51,7 +53,6 @@ def load_pokemon_filters(settings):
         "form": None
     }, 'default')
     default = default_filt.to_dict()
-
     # Add the filters to the settings
     filters = {}
     for name in settings:
@@ -74,7 +75,7 @@ def load_pokemon_section(settings):
     log.info("Setting Pokemon filters...")
     pokemon = { "enabled": bool(parse_boolean(settings.pop('enabled', None)) or False)}
 
-    filters = load_pokemon_filters(settings)
+    filters = load_pokemon_filters(settings)              
     pokemon['filters'] = filters
     # Output filters
     log.debug(filters)
@@ -193,10 +194,12 @@ class PokemonFilter(Filter):
         # Size
         self.sizes = PokemonFilter.check_sizes(settings.pop("size", default['size']))
         self.genders = PokemonFilter.check_genders(settings.pop("gender", default['gender']))
+        self.forms = PokemonFilter.check_forms(settings.pop("form", default['form']))
         # Moves - These can't be set in the default filter
         self.req_quick_move = PokemonFilter.create_moves_list(settings.pop("quick_move", default['quick_move']))
         self.req_charge_move = PokemonFilter.create_moves_list(settings.pop("charge_move", default['charge_move']))
         self.req_moveset = PokemonFilter.create_moveset_list(settings.pop("moveset",  default['moveset']))
+
         reject_leftover_parameters(settings, "pokemon filter under '{}'".format(location))
 
     # Checks the given distance against this filter
@@ -260,6 +263,11 @@ class PokemonFilter(Filter):
             return True
         return gender in self.genders
 
+    # Checks the form_id against this filter
+    def check_form(self, form_id):
+        if self.forms is None:
+            return True
+        return form_id in self.forms
     # Convert this filter to a dict
     def to_dict(self):
         return {
@@ -274,6 +282,7 @@ class PokemonFilter(Filter):
             "moveset": self.req_moveset,
             "size": self.sizes,
             "gender": self.genders,
+            "form": self.forms,
             "ignore_missing": self.ignore_missing
         }
 
@@ -337,6 +346,7 @@ class PokemonFilter(Filter):
                 sys.exit(1)
         return list_
 
+
     @staticmethod
     def check_genders(genders):
         if genders is None:  # no genders
@@ -365,6 +375,21 @@ class PokemonFilter(Filter):
                 log.error("Please use one of the following: {}".format(valid_genders))
                 sys.exit(1)
         return list_
+
+    @staticmethod
+    def check_forms(forms):
+        if forms is None:  # no sizes
+            return None
+        list_ = set()
+        for form_id in forms:
+            try:
+                list_.add(int(form_id))
+            except TypeError:
+                log.error("{} is not a valid form.".format(form_id))
+                log.error("Please use an integer to represent form filters.")
+                sys.exit(1)
+        return list_
+
 
 # Pokestop Filter is used to determine when Pokestop notifications will be triggered.
 class PokestopFilter(Filter):
