@@ -262,12 +262,6 @@ class PokemonFilter(Filter):
             return True
         return gender in self.genders
 
-    # Checks the form_id against this filter
-    def check_form(self, form_id):
-        if self.forms is None:
-            return True
-        return form_id in self.forms
-
     # Convert this filter to a dict
     def to_dict(self):
         return {
@@ -374,21 +368,6 @@ class PokemonFilter(Filter):
                 log.error("Please use one of the following: {}".format(valid_genders))
                 sys.exit(1)
         return list_
-
-    @staticmethod
-    def check_forms(forms):
-        if forms is None:  # no sizes
-            return None
-        list_ = set()
-        for form_id in forms:
-            try:
-                list_.add(int(form_id))
-            except TypeError:
-                log.error("{} is not a valid form.".format(form_id))
-                log.error("Please use an integer to represent form filters.")
-                sys.exit(1)
-        return list_
-
 
 # Pokestop Filter is used to determine when Pokestop notifications will be triggered.
 class PokestopFilter(Filter):

@@ -304,7 +304,7 @@ class Manager(object):
                 del dict_[id_]
 
     # Check if a given pokemon is active on a filter
-    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, form_id, gender, iv,
+    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, gender, iv,
                              level, name, size):
         for filt_ct in range(len(filters)):
             filt = filters[filt_ct]
