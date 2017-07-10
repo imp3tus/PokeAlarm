@@ -197,7 +197,6 @@ class PokemonFilter(Filter):
         self.req_quick_move = PokemonFilter.create_moves_list(settings.pop("quick_move", default['quick_move']))
         self.req_charge_move = PokemonFilter.create_moves_list(settings.pop("charge_move", default['charge_move']))
         self.req_moveset = PokemonFilter.create_moveset_list(settings.pop("moveset",  default['moveset']))
-
         reject_leftover_parameters(settings, "pokemon filter under '{}'".format(location))
 
     # Checks the given distance against this filter
@@ -275,7 +274,6 @@ class PokemonFilter(Filter):
             "moveset": self.req_moveset,
             "size": self.sizes,
             "gender": self.genders,
-            "form": self.forms,
             "ignore_missing": self.ignore_missing
         }
 
