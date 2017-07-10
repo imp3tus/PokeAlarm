@@ -19,7 +19,6 @@ replace = Alarm.replace
 
 
 class PushbulletAlarm(Alarm):
-
     _defaults = {
         'pokemon': {
             'title': "A wild <pkmn> has appeared!",
@@ -47,6 +46,7 @@ class PushbulletAlarm(Alarm):
             'body': "The raid is available until <24h_time> (<time_left>)."
         }
     }
+
 
     # Gather settings and create alarm
     def __init__(self, settings):

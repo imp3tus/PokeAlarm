@@ -4,7 +4,7 @@ import logging
 import traceback
 # 3rd Party Imports
 # Local Imports
-from Utils import get_gmaps_link, get_form_name, get_move_damage, get_move_dps, get_move_duration,\
+from Utils import get_gmaps_link, get_move_damage, get_move_dps, get_move_duration,\
     get_move_energy, get_pokemon_gender, get_pokemon_size, get_applemaps_link
 
 log = logging.getLogger('WebhookStructs')
@@ -29,7 +29,7 @@ class RocketMap:
             elif kind == 'gym' or kind == 'gym_details':
                 return RocketMap.gym(data.get('message'))
             elif kind == 'raid':
-                return RocketMap.raid(data.get('message'))                           
+                return RocketMap.raid(data.get('message'))
             elif kind in ['captcha', 'scheduler']:  # Unsupported Webhooks
                 log.debug("{} webhook received. This webhooks is not yet supported at this time.".format({kind}))
             else:
@@ -77,6 +77,7 @@ class RocketMap:
             'height': check_for_none(float, data.get('height'), 'unkn'),
             'weight': check_for_none(float, data.get('weight'), 'unkn'),
             'gender': get_pokemon_gender(check_for_none(int, data.get('gender'), '?')),
+            'form_id': check_for_none(int, data.get('form'), '?'),                   
             'size': 'unknown',
             'tiny_rat': '',
             'big_karp': '',
@@ -173,7 +174,7 @@ class RocketMap:
 
         return raid
 
-    @staticmethod    
+    @staticmethod
     def gym(data):
         log.debug("Converting to gym: \n {}".format(data))
         gym = {
@@ -184,10 +185,9 @@ class RocketMap:
             "guard_pkmn_id": data.get('guard_pokemon_id'),
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
-            'lng': float(data['longitude']),
             'name': check_for_none(str, data.get('name'), 'unknown'),
             'description': check_for_none(str, data.get('description'), 'unknown'),
-            'url': check_for_none(str, data.get('url'), 'unknown')                                   
+            'url': check_for_none(str, data.get('url'), 'unknown')
         }
         gym['gmaps'] = get_gmaps_link(gym['lat'], gym['lng'])
         gym['applemaps'] = get_applemaps_link(gym['lat'], gym['lng'])

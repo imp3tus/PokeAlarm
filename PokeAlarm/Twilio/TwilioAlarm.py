@@ -114,6 +114,7 @@ class TwilioAlarm(Alarm):
     # Trigger an alert based on Raid info
     def raid_alert(self, raid_info):
         self.send_alert(self.__raid, raid_info)
+
     # Send a SMS message
     def send_sms(self, to_num, from_num, body):
         args = {

@@ -39,7 +39,6 @@ class TwitterAlarm(Alarm):
         }
     }
 
-
     # Gather settings and create alarm
     def __init__(self, settings):
         # Required Parameters
@@ -116,6 +115,7 @@ class TwitterAlarm(Alarm):
     # Trigger an alert based on Gym info
     def raid_alert(self, raid_info):
         self.send_alert(self.__raid, raid_info)
+
     # Send out a tweet with the given status
     def send_tweet(self, status):
         self.__client.statuses.update(status=status)

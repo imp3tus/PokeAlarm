@@ -144,6 +144,7 @@ class SlackAlarm(Alarm):
     # Trigger an alert based on Gym info
     def raid_alert(self, raid_info):
         self.send_alert(self.__raid, raid_info)
+
     # Get a list of channels from Slack to help
     def update_channels(self):
         self.__channels = {}

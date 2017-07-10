@@ -20,7 +20,6 @@ replace = Alarm.replace
 
 
 class TelegramAlarm(Alarm):
-
     _defaults = {
         'pokemon': {
             # 'chat_id': If no default, required
@@ -143,6 +142,7 @@ class TelegramAlarm(Alarm):
             self.send_alert(self.__raid, raid_info, sticker_list.get(str(raid_info['pkmn_id'])))
         else:
             self.send_alert(self.__raid, raid_info)
+
     # Send a message to telegram
     def send_message(self, chat_id, text):
         args = {

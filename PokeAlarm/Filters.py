@@ -86,6 +86,7 @@ def load_pokemon_section(settings):
         log.info("Pokemon notifications will NOT be sent - Enabled is False.")
     return pokemon
 
+
 def load_pokestop_section(settings):
     log.info("Setting Pokestop filters...")
     # Set the defaults settings for "True"
@@ -265,7 +266,8 @@ class PokemonFilter(Filter):
     def check_form(self, form_id):
         if self.forms is None:
             return True
-        return form in self.forms
+        return form_id in self.forms
+
     # Convert this filter to a dict
     def to_dict(self):
         return {
@@ -371,6 +373,20 @@ class PokemonFilter(Filter):
             else:
                 log.error("{} is not a valid gender name.".format(gender))
                 log.error("Please use one of the following: {}".format(valid_genders))
+                sys.exit(1)
+        return list_
+
+    @staticmethod
+    def check_forms(forms):
+        if forms is None:  # no sizes
+            return None
+        list_ = set()
+        for form_id in forms:
+            try:
+                list_.add(int(form_id))
+            except TypeError:
+                log.error("{} is not a valid form.".format(form_id))
+                log.error("Please use an integer to represent form filters.")
                 sys.exit(1)
         return list_
 

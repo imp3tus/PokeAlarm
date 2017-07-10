@@ -304,12 +304,54 @@ class Manager(object):
             for id_ in old:  # Remove gathered events
                 del dict_[id_]
 
+                                                                            
+                                    
+                                            
+                                                       
+                                                                             
+                  
+
+                                       
+                        
+                                 
+                                           
+
     # Check if a given pokemon is active on a filter
-    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, gender, iv,
+    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, form_id, gender, iv,
                              level, name, size):
+                  
+                                                         
 
+                                  
+                                                                                   
+                                            
+                                     
+                                                                                             
+                  
+
+                                           
+                                                             
+                                     
+                                                                       
+                  
+
+                                                                   
         passed = False
+                                           
+                                                        
+                       
+                             
+                       
+                          
+                         
+                         
+                                   
+                                     
+                           
+                               
+                           
 
+                                                             
         for filt_ct in range(len(filters)):
             filt = filters[filt_ct]
 
@@ -462,6 +504,13 @@ class Manager(object):
                     continue
                 log.debug("Pokemon 'gender' was not checked because it was missing.")
 
+            # Check for a valid form
+            if form_id is not None and form_id != 'unkn' and form_id != '?':
+                if not filt.check_form(form_id):
+                    if self.__quiet is False:
+                        log.info("{} rejected: Form ({}) was not correct - (F #{})".format(name, form_id, filt_ct))
+                    continue
+
             # Nothing left to check, so it must have passed
             passed = True
             log.debug("{} passed filter #{}".format(name, filt_ct))
@@ -537,7 +586,7 @@ class Manager(object):
         form_id = pkmn['form_id']
 
         filters = self.__pokemon_settings['filters'][pkmn_id]
-        passed = self.check_pokemon_filter(filters, atk, def_, sta, quick_id, charge_id, cp, dist, gender, iv,
+        passed = self.check_pokemon_filter(filters, atk, def_, sta, quick_id, charge_id, cp, dist, form_id, gender, iv,
                                            level, name, size)
         # If we didn't pass any filters
         if not passed:
@@ -552,8 +601,8 @@ class Manager(object):
         # Finally, add in all the extra crap we waited to calculate until now
         time_str = get_time_as_str(pkmn['disappear_time'], self.__timezone)
 		#If it has a form it's an unown and append form onto name
-        if form_id != "unset":
-			name = name + " - " + form_id
+        if form != "unset":
+			name = name + " - " + form
         pkmn.update({
             'pkmn': name,
             "dist": get_dist_as_str(dist) if dist != 'unkn' else 'unkn',

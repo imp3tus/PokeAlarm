@@ -21,6 +21,7 @@ replace = Alarm.replace
 
 class FacebookPageAlarm(Alarm):
 
+
     _defaults = {
         'pokemon': {
             'message': "A wild <pkmn> has appeared!",
@@ -42,7 +43,7 @@ class FacebookPageAlarm(Alarm):
             'message': "A Team <old_team> gym has fallen!",
             'image': "https://raw.githubusercontent.com/kvangent/PokeAlarm/master/icons/gym_<team_id>.png",
             'link': "<gmaps>",
-            'name': "<old_team> gym fallen", 
+            'name': "<old_team> gym fallen",
             'description': "It is now controlled by <new_team>",
             'caption': None
         },
@@ -63,7 +64,6 @@ class FacebookPageAlarm(Alarm):
             'caption': None
         }
     }
-
     # Gather settings and create alarm
     def __init__(self, settings):
         # Required Parameters
@@ -144,6 +144,7 @@ class FacebookPageAlarm(Alarm):
     # Trigger an alert based on Raid info
     def raid_alert(self, raid_info):
         self.send_alert(self.__raid, raid_info)
+
     # Sends a wall post to Facebook
     def post_to_wall(self, message, attachment=None):
         args = {"message": message}
