@@ -104,6 +104,7 @@ class Manager(object):
             # Load in the Raid Section
             self.__raid_settings = load_raid_section(
                 require_and_remove_key('raids', filters, "Filters file."))
+
             return
 
         except ValueError as e:
@@ -304,10 +305,11 @@ class Manager(object):
                 del dict_[id_]
 
     # Check if a given pokemon is active on a filter
-    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, form, gender, iv,
+    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, gender, iv,
                              level, name, size):
 
-        filters = self.__pokemon_settings['filters'][pkmn_id]
+        passed = False
+
         for filt_ct in range(len(filters)):
             filt = filters[filt_ct]
 
@@ -460,13 +462,6 @@ class Manager(object):
                     continue
                 log.debug("Pokemon 'gender' was not checked because it was missing.")
 
-            # Check for a valid form
-            if form is not None and form != 'unkn' and form_id != '?':
-                if not filt.check_form(form):
-                    if self.__quiet is False:
-                        log.info("{} rejected: Form ({}) was not correct - (F #{})".format(name, form, filt_ct))
-                    continue
-
             # Nothing left to check, so it must have passed
             passed = True
             log.debug("{} passed filter #{}".format(name, filt_ct))
@@ -539,10 +534,10 @@ class Manager(object):
         charge_id = pkmn['charge_id']
         size = pkmn['size']
         gender = pkmn['gender']
-        form = pkmn['form']
+        form_id = pkmn['form_id']
 
         filters = self.__pokemon_settings['filters'][pkmn_id]
-        passed = self.check_pokemon_filter(filters, atk, def_, sta, quick_id, charge_id, cp, dist, form, gender, iv,
+        passed = self.check_pokemon_filter(filters, atk, def_, sta, quick_id, charge_id, cp, dist, gender, iv,
                                            level, name, size)
         # If we didn't pass any filters
         if not passed:
@@ -557,8 +552,8 @@ class Manager(object):
         # Finally, add in all the extra crap we waited to calculate until now
         time_str = get_time_as_str(pkmn['disappear_time'], self.__timezone)
 		#If it has a form it's an unown and append form onto name
-        if form != "unset":
-			name = name + " - " + form
+        if form_id != "unset":
+			name = name + " - " + form_id
         pkmn.update({
             'pkmn': name,
             "dist": get_dist_as_str(dist) if dist != 'unkn' else 'unkn',
@@ -677,6 +672,7 @@ class Manager(object):
                 "description": gym['description'],
                 "url": gym['url']
             }
+
         # Doesn't look like anything to me
         if to_team_id == from_team_id:
             log.debug("Gym ignored: no change detected")
@@ -803,21 +799,11 @@ class Manager(object):
         lat, lng = raid['lat'], raid['lng']
         dist = get_earth_dist([lat, lng], self.__latlng)
 
-        # Check the geofences
-        raid['geofence'] = self.check_geofences('raid', lat, lng)
+        # Check if raid is in geofences
+        raid['geofence'] = self.check_geofences('Raid', lat, lng)
         if len(self.__geofences) > 0 and raid['geofence'] == 'unknown':
-            log.info("raid rejected: not inside geofence(s)")
+            log.info("Raid update ignored: located outside geofences.")
             return
-
-        # Check if in geofences
-        if len(self.__geofences) > 0:
-            inside = False
-            for gf in self.__geofences:
-                inside |= gf.contains(lat, lng)
-            if inside is False:
-                if self.__quiet is False:
-                    log.info("Raid update ignored: located outside geofences.")
-                return
         else:
             log.debug("Raid inside geofences was not checked because no geofences were set.")
 

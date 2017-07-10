@@ -35,8 +35,6 @@ def create_multi_filter(location, FilterType, settings, default):
 
 
 def load_pokemon_filters(settings):
-    log.info("Setting Pokemon filters...")
-    pokemon = { "enabled": bool(parse_boolean(settings.pop('enabled', None)) or False)}
     # Set the defaults for "True"
     default_filt = PokemonFilter(settings.pop('default', {}), {
         "ignore_missing": False,
@@ -53,6 +51,7 @@ def load_pokemon_filters(settings):
         "form": None
     }, 'default')
     default = default_filt.to_dict()
+
     # Add the filters to the settings
     filters = {}
     for name in settings:
@@ -86,7 +85,6 @@ def load_pokemon_section(settings):
     if pokemon['enabled'] is False:
         log.info("Pokemon notifications will NOT be sent - Enabled is False.")
     return pokemon
-
 
 def load_pokestop_section(settings):
     log.info("Setting Pokestop filters...")
@@ -194,7 +192,6 @@ class PokemonFilter(Filter):
         # Size
         self.sizes = PokemonFilter.check_sizes(settings.pop("size", default['size']))
         self.genders = PokemonFilter.check_genders(settings.pop("gender", default['gender']))
-        self.forms = PokemonFilter.check_forms(settings.pop("form", default['form']))
         # Moves - These can't be set in the default filter
         self.req_quick_move = PokemonFilter.create_moves_list(settings.pop("quick_move", default['quick_move']))
         self.req_charge_move = PokemonFilter.create_moves_list(settings.pop("charge_move", default['charge_move']))
@@ -263,11 +260,6 @@ class PokemonFilter(Filter):
             return True
         return gender in self.genders
 
-    # Checks the form against this filter
-    def check_form(self, form):
-        if self.forms is None:
-            return True
-        return form in self.forms
     # Convert this filter to a dict
     def to_dict(self):
         return {
@@ -373,20 +365,6 @@ class PokemonFilter(Filter):
             else:
                 log.error("{} is not a valid gender name.".format(gender))
                 log.error("Please use one of the following: {}".format(valid_genders))
-                sys.exit(1)
-        return list_
-
-    @staticmethod
-    def check_forms(forms):
-        if forms is None:  # no sizes
-            return None
-        list_ = set()
-        for form in forms:
-            try:
-                list_.add(int(form))
-            except TypeError:
-                log.error("{} is not a valid form.".format(form))
-                log.error("Please use an integer to represent form filters.")
                 sys.exit(1)
         return list_
 

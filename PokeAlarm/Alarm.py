@@ -61,6 +61,7 @@ class Alarm(object):
     # Trigger an alert when a raid egg is HATCHED (active raid)
     def raid_alert(self, pokeraid_info):
         raise NotImplementedError('Raid Alert is not implemented.')
+
     # Return a version of the string with the correct substitutions made
     @staticmethod
     def replace(string, pkinfo):
