@@ -193,7 +193,6 @@ class PokemonFilter(Filter):
         # Size
         self.sizes = PokemonFilter.check_sizes(settings.pop("size", default['size']))
         self.genders = PokemonFilter.check_genders(settings.pop("gender", default['gender']))
-        self.forms = PokemonFilter.check_forms(settings.pop("form", default['form']))
         # Moves - These can't be set in the default filter
         self.req_quick_move = PokemonFilter.create_moves_list(settings.pop("quick_move", default['quick_move']))
         self.req_charge_move = PokemonFilter.create_moves_list(settings.pop("charge_move", default['charge_move']))
