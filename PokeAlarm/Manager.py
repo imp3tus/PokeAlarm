@@ -351,7 +351,7 @@ class Manager(object):
         form = pkmn['form']
 
     # Check if a given pokemon is active on a filter
-    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, form_id, gender, iv,
+    def check_pokemon_filter(self, filters, attack, defense, stamina, quick_id, charge_id, cp, dist, form, gender, iv,
                              level, name, size):
 
         filters = self.__pokemon_settings['filters'][pkmn_id]
@@ -508,10 +508,10 @@ class Manager(object):
                 log.debug("Pokemon 'gender' was not checked because it was missing.")
 
             # Check for a valid form
-            if form_id is not None and form_id != 'unkn' and form_id != '?':
-                if not filt.check_form(form_id):
+            if form is not None and form != 'unkn' and form_id != '?':
+                if not filt.check_form(form):
                     if self.__quiet is False:
-                        log.info("{} rejected: Form ({}) was not correct - (F #{})".format(name, form_id, filt_ct))
+                        log.info("{} rejected: Form ({}) was not correct - (F #{})".format(name, form, filt_ct))
                     continue
 
             # Nothing left to check, so it must have passed
@@ -586,10 +586,10 @@ class Manager(object):
         charge_id = pkmn['charge_id']
         size = pkmn['size']
         gender = pkmn['gender']
-        form_id = pkmn['form_id']
+        form = pkmn['form']
 
         filters = self.__pokemon_settings['filters'][pkmn_id]
-        passed = self.check_pokemon_filter(filters, atk, def_, sta, quick_id, charge_id, cp, dist, form_id, gender, iv,
+        passed = self.check_pokemon_filter(filters, atk, def_, sta, quick_id, charge_id, cp, dist, form, gender, iv,
                                            level, name, size)
         # If we didn't pass any filters
         if not passed:

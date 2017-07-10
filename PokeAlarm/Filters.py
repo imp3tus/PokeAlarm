@@ -263,11 +263,11 @@ class PokemonFilter(Filter):
             return True
         return gender in self.genders
 
-    # Checks the form_id against this filter
-    def check_form(self, form_id):
+    # Checks the form against this filter
+    def check_form(self, form):
         if self.forms is None:
             return True
-        return form_id in self.forms
+        return form in self.forms
     # Convert this filter to a dict
     def to_dict(self):
         return {
@@ -381,11 +381,11 @@ class PokemonFilter(Filter):
         if forms is None:  # no sizes
             return None
         list_ = set()
-        for form_id in forms:
+        for form in forms:
             try:
-                list_.add(int(form_id))
+                list_.add(int(form))
             except TypeError:
-                log.error("{} is not a valid form.".format(form_id))
+                log.error("{} is not a valid form.".format(form))
                 log.error("Please use an integer to represent form filters.")
                 sys.exit(1)
         return list_
