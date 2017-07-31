@@ -928,6 +928,11 @@ class Manager(object):
             leaders = json.loads(f.read())
             for team_id, value in leaders.iteritems():
                 self.__leader[int(team_id)] = value
+        # Update weakness
+        with open(os.path.join(locale_path, 'weak.json'), 'r') as f:
+            weak = json.loads(f.read())
+            for team_id, value in weak.iteritems():
+                self.__weak_type[int(weak_id)] = value
 
     ####################################################################################################################
 

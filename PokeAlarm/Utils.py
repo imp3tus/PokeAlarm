@@ -75,6 +75,19 @@ def require_and_remove_key(key, _dict, location):
 
 ################################################## POKEMON UTILITIES ###################################################
 
+# Returns the id corresponding with the weakness (use all locales for flexibility)
+def get_weak_id(weak_type):
+    weak = weak_type.lower()
+    if not hasattr(get_weak_id, 'ids'):
+        get_weak_id.ids = {}
+        files = glob(get_path('locales/*/weak.json'))
+        for file_ in files:
+            with open(file_, 'r') as f:
+                j = json.loads(f.read())
+                for id_ in j:
+                    nm = j[id_].lower()
+                    get_weak_id.ids[nm] = int(id_)
+    return get_weak_id.ids.get(weak)
 
 # Returns the id corresponding with the pokemon name (use all locales for flexibility)
 def get_pkmn_id(pokemon_name):
